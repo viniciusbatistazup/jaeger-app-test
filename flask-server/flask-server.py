@@ -1,8 +1,9 @@
 import logging
 from jaeger_client import Config
+from flask import Flask
 from flask_opentracing import FlaskTracing
-from flask import Flask, request
 from os import getenv
+
 JAEGER_HOST = getenv('JAEGER_HOST', 'localhost')
 JAEGER_PORT = getenv('JAEGER_PORT', 6831)
 
@@ -11,25 +12,21 @@ if __name__ == '__main__':
         log_level = logging.DEBUG
         logging.getLogger('').handlers = []
         logging.basicConfig(format='%(asctime)s %(message)s', level=log_level)
-        # Create configuration object with enabled logging and sampling of all requests.
+
         config = Config(config={'sampler': {'type': 'const', 'param': 1},
                                 'logging': True,
                                 'local_agent':
-                                # Also, provide a hostname of Jaeger instance to send traces to.
                                 {'reporting_host': JAEGER_HOST, 'reporting_port': 6831 }},
-                        # Service name can be arbitrary string describing this particular web service.
-                        service_name="jaeger-app-test")
+                        service_name="jaeger-opentracing-server")
         jaeger_tracer = config.initialize_tracer()
         tracing = FlaskTracing(jaeger_tracer)
 
         @app.route('/log')
-        @tracing.trace() # Indicate that /log endpoint should be traced
+        @tracing.trace()
         def log():
-                # Extract the span information for request object.
                 with jaeger_tracer.start_active_span(
                         'python webserver internal span of log method') as scope:
-                    # Perform some computations to be traced.
-
+                        
                     a = 1
                     b = 2
                     c = a + b

@@ -5,6 +5,9 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY server.py .
+ENV JAEGER_HOST=jaeger-agent
+ENV JAEGER_PORT=6831
 
-CMD [ "python3", "server.py"]
+COPY flask-server.py .
+
+CMD [ "python3", "flask-server.py"]

@@ -8,20 +8,20 @@ from os import getenv
 JAEGER_HOST = getenv('JAEGER_HOST', 'localhost')
 WEBSERVER_HOST = getenv('WEBSERVER_HOST', 'localhost')
 
-# Create configuration object with enabled logging and sampling of all requests.
 config = Config(config={'sampler': {'type': 'const', 'param': 1},
                         'logging': True,
                         'local_agent': {'reporting_host': JAEGER_HOST}},
-                service_name="jaeger_opentracing_example")
+                service_name="jaeger-opentracing-client")
 tracer = config.initialize_tracer()
 
-# Automatically trace all requests made with 'requests' library.
 install_all_patches()
 
-url = "http://{}:5000/log".format(WEBSERVER_HOST)
-# Make the actual request to webserver.
-requests.get(url)
+while True:
+    url = "http://{}:5000/log".format(WEBSERVER_HOST)
+    try:
+        requests.get(url)
+    except:
+        print("ERR_CONNECTION_TIMED_OUT")
 
-# allow tracer to flush the spans - https://github.com/jaegertracing/jaeger-client-python/issues/50
-time.sleep(2)
-tracer.close()
+    time.sleep(2)
+    tracer.close()
